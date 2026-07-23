@@ -1,0 +1,6 @@
+{
+  "id": "pebble-poses",
+  "displayName": "Pebble Poses",
+  "description": "Pebble, a focused stone companion for Codex activity states.",
+  "spritesheetPath": "spritesheet.png"
+}

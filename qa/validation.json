@@ -1,0 +1,803 @@
+{
+  "ok": true,
+  "petDir": "/mnt/data/pebble-codex-pet/pebble-poses",
+  "spritesheet": "/mnt/data/pebble-codex-pet/pebble-poses/spritesheet.png",
+  "format": "PNG",
+  "size": [
+    1536,
+    1872
+  ],
+  "bytes": 2529561,
+  "transparentRgbResiduePixels": 0,
+  "rows": [
+    {
+      "index": 0,
+      "name": "idle",
+      "usedColumns": 6,
+      "uniqueFrames": 4,
+      "cells": [
+        {
+          "column": 0,
+          "bbox": [
+            9,
+            61,
+            186,
+            199
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 1,
+          "bbox": [
+            9,
+            60,
+            186,
+            199
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 2,
+          "bbox": [
+            9,
+            59,
+            186,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 3,
+          "bbox": [
+            9,
+            60,
+            186,
+            199
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 4,
+          "bbox": [
+            10,
+            36,
+            185,
+            199
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 5,
+          "bbox": [
+            9,
+            61,
+            186,
+            199
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 6,
+          "bbox": null,
+          "components": 0,
+          "used": false
+        },
+        {
+          "column": 7,
+          "bbox": null,
+          "components": 0,
+          "used": false
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "name": "running-right",
+      "usedColumns": 8,
+      "uniqueFrames": 8,
+      "cells": [
+        {
+          "column": 0,
+          "bbox": [
+            4,
+            44,
+            176,
+            200
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 1,
+          "bbox": [
+            6,
+            43,
+            177,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 2,
+          "bbox": [
+            7,
+            42,
+            183,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 3,
+          "bbox": [
+            10,
+            44,
+            181,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 4,
+          "bbox": [
+            11,
+            42,
+            182,
+            199
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 5,
+          "bbox": [
+            12,
+            41,
+            187,
+            197
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 6,
+          "bbox": [
+            13,
+            41,
+            184,
+            199
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 7,
+          "bbox": [
+            12,
+            41,
+            187,
+            198
+          ],
+          "components": 1,
+          "used": true
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "name": "running-left",
+      "usedColumns": 8,
+      "uniqueFrames": 8,
+      "cells": [
+        {
+          "column": 0,
+          "bbox": [
+            16,
+            44,
+            188,
+            200
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 1,
+          "bbox": [
+            15,
+            43,
+            186,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 2,
+          "bbox": [
+            9,
+            42,
+            185,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 3,
+          "bbox": [
+            11,
+            44,
+            182,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 4,
+          "bbox": [
+            10,
+            42,
+            181,
+            199
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 5,
+          "bbox": [
+            5,
+            41,
+            180,
+            197
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 6,
+          "bbox": [
+            8,
+            41,
+            179,
+            199
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 7,
+          "bbox": [
+            5,
+            41,
+            180,
+            198
+          ],
+          "components": 1,
+          "used": true
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "name": "waving",
+      "usedColumns": 4,
+      "uniqueFrames": 4,
+      "cells": [
+        {
+          "column": 0,
+          "bbox": [
+            9,
+            61,
+            186,
+            199
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 1,
+          "bbox": [
+            8,
+            22,
+            183,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 2,
+          "bbox": [
+            13,
+            21,
+            178,
+            197
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 3,
+          "bbox": [
+            8,
+            23,
+            183,
+            199
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 4,
+          "bbox": null,
+          "components": 0,
+          "used": false
+        },
+        {
+          "column": 5,
+          "bbox": null,
+          "components": 0,
+          "used": false
+        },
+        {
+          "column": 6,
+          "bbox": null,
+          "components": 0,
+          "used": false
+        },
+        {
+          "column": 7,
+          "bbox": null,
+          "components": 0,
+          "used": false
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "name": "jumping",
+      "usedColumns": 5,
+      "uniqueFrames": 4,
+      "cells": [
+        {
+          "column": 0,
+          "bbox": [
+            7,
+            29,
+            185,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 1,
+          "bbox": [
+            10,
+            16,
+            182,
+            193
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 2,
+          "bbox": [
+            10,
+            11,
+            183,
+            189
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 3,
+          "bbox": [
+            10,
+            16,
+            182,
+            193
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 4,
+          "bbox": [
+            8,
+            26,
+            184,
+            197
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 5,
+          "bbox": null,
+          "components": 0,
+          "used": false
+        },
+        {
+          "column": 6,
+          "bbox": null,
+          "components": 0,
+          "used": false
+        },
+        {
+          "column": 7,
+          "bbox": null,
+          "components": 0,
+          "used": false
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "name": "failed",
+      "usedColumns": 8,
+      "uniqueFrames": 7,
+      "cells": [
+        {
+          "column": 0,
+          "bbox": [
+            12,
+            20,
+            181,
+            197
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 1,
+          "bbox": [
+            8,
+            36,
+            184,
+            197
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 2,
+          "bbox": [
+            19,
+            21,
+            172,
+            196
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 3,
+          "bbox": [
+            9,
+            44,
+            182,
+            197
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 4,
+          "bbox": [
+            8,
+            69,
+            184,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 5,
+          "bbox": [
+            9,
+            45,
+            182,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 6,
+          "bbox": [
+            20,
+            21,
+            173,
+            196
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 7,
+          "bbox": [
+            12,
+            20,
+            181,
+            197
+          ],
+          "components": 1,
+          "used": true
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "name": "waiting",
+      "usedColumns": 6,
+      "uniqueFrames": 5,
+      "cells": [
+        {
+          "column": 0,
+          "bbox": [
+            9,
+            61,
+            186,
+            199
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 1,
+          "bbox": [
+            10,
+            35,
+            185,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 2,
+          "bbox": [
+            7,
+            36,
+            183,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 3,
+          "bbox": [
+            8,
+            36,
+            184,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 4,
+          "bbox": [
+            8,
+            37,
+            184,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 5,
+          "bbox": [
+            9,
+            61,
+            186,
+            199
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 6,
+          "bbox": null,
+          "components": 0,
+          "used": false
+        },
+        {
+          "column": 7,
+          "bbox": null,
+          "components": 0,
+          "used": false
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "name": "running",
+      "usedColumns": 6,
+      "uniqueFrames": 4,
+      "cells": [
+        {
+          "column": 0,
+          "bbox": [
+            8,
+            36,
+            184,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 1,
+          "bbox": [
+            8,
+            37,
+            185,
+            196
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 2,
+          "bbox": [
+            8,
+            37,
+            185,
+            196
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 3,
+          "bbox": [
+            8,
+            84,
+            184,
+            197
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 4,
+          "bbox": [
+            12,
+            20,
+            181,
+            197
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 5,
+          "bbox": [
+            8,
+            36,
+            184,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 6,
+          "bbox": null,
+          "components": 0,
+          "used": false
+        },
+        {
+          "column": 7,
+          "bbox": null,
+          "components": 0,
+          "used": false
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "name": "review",
+      "usedColumns": 6,
+      "uniqueFrames": 5,
+      "cells": [
+        {
+          "column": 0,
+          "bbox": [
+            12,
+            20,
+            181,
+            197
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 1,
+          "bbox": [
+            8,
+            36,
+            184,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 2,
+          "bbox": [
+            10,
+            35,
+            185,
+            198
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 3,
+          "bbox": [
+            8,
+            36,
+            184,
+            197
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 4,
+          "bbox": [
+            19,
+            21,
+            172,
+            196
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 5,
+          "bbox": [
+            12,
+            20,
+            181,
+            197
+          ],
+          "components": 1,
+          "used": true
+        },
+        {
+          "column": 6,
+          "bbox": null,
+          "components": 0,
+          "used": false
+        },
+        {
+          "column": 7,
+          "bbox": null,
+          "components": 0,
+          "used": false
+        }
+      ]
+    }
+  ]
+}
