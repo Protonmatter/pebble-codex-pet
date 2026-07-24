@@ -15,13 +15,17 @@ RUNTIME_ZIP = DIST / "pebble-poses-runtime.zip"
 SOURCE_ZIP = DIST / "pebble-poses-source.zip"
 CHECKSUMS = DIST / "SHA256SUMS"
 
-EXCLUDED_DIRS = {".git", "dist", "__pycache__", ".pytest_cache", ".mypy_cache"}
+EXCLUDED_DIRS = {".git", "dist", "build", "__pycache__", ".pytest_cache", ".mypy_cache"}
 EXCLUDED_FILES = {".DS_Store"}
 EXCLUDED_SUFFIXES = {".pyc", ".pyo"}
+# Machine-generated report with host-specific paths; regenerated per run.
+EXCLUDED_RELATIVE = {Path("qa/validation.json")}
 
 
 def should_include(path: Path) -> bool:
     relative = path.relative_to(ROOT)
+    if relative in EXCLUDED_RELATIVE:
+        return False
     if any(part in EXCLUDED_DIRS for part in relative.parts):
         return False
     if path.name in EXCLUDED_FILES or path.suffix in EXCLUDED_SUFFIXES:

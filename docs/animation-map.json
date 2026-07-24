@@ -48,7 +48,7 @@
           "dx": 0.0,
           "dy": 0.0,
           "scale_x": 1.0,
-          "scale_y": 0.996,
+          "scale_y": 1.0,
           "rotate": 0.0,
           "mirror": false,
           "poseName": "idle_neutral"
@@ -56,9 +56,9 @@
         {
           "pose": 1,
           "dx": 0.0,
-          "dy": -0.4,
-          "scale_x": 1.002,
-          "scale_y": 1.004,
+          "dy": -1.0,
+          "scale_x": 1.0,
+          "scale_y": 1.0,
           "rotate": 0.0,
           "mirror": false,
           "poseName": "idle_neutral"
@@ -66,19 +66,19 @@
         {
           "pose": 1,
           "dx": 0.0,
-          "dy": -0.8,
-          "scale_x": 1.004,
-          "scale_y": 1.01,
+          "dy": -2.0,
+          "scale_x": 1.0,
+          "scale_y": 1.0,
           "rotate": 0.0,
           "mirror": false,
           "poseName": "idle_neutral"
         },
         {
           "pose": 1,
-          "dx": 0.0,
-          "dy": -0.4,
-          "scale_x": 1.002,
-          "scale_y": 1.004,
+          "dx": 1.2,
+          "dy": -1.0,
+          "scale_x": 1.0,
+          "scale_y": 1.0,
           "rotate": 0.0,
           "mirror": false,
           "poseName": "idle_neutral"
@@ -98,7 +98,7 @@
           "dx": 0.0,
           "dy": 0.0,
           "scale_x": 1.0,
-          "scale_y": 0.996,
+          "scale_y": 1.0,
           "rotate": 0.0,
           "mirror": false,
           "poseName": "idle_neutral"
