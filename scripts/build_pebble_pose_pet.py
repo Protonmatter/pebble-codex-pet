@@ -73,12 +73,16 @@ ANIMATION_ROWS: tuple[AnimationRow, ...] = (
         "Calm, low-distraction breathing and a brief curious glance.",
         (280, 110, 110, 140, 140, 320),
         (
-            FrameSpec(1, scale_y=0.996),
-            FrameSpec(1, dy=-0.4, scale_x=1.002, scale_y=1.004),
-            FrameSpec(1, dy=-0.8, scale_x=1.004, scale_y=1.010),
-            FrameSpec(1, dy=-0.4, scale_x=1.002, scale_y=1.004),
+            # Sub-pixel scale/offset tweaks render identically, so the breathing
+            # bob steps in whole pixels (rest, rise, peak) and the descent adds a
+            # ~1px lateral drift. That keeps five distinct frames, one above the
+            # verifier's idle uniqueness floor of four.
+            FrameSpec(1),
+            FrameSpec(1, dy=-1.0),
+            FrameSpec(1, dy=-2.0),
+            FrameSpec(1, dy=-1.0, dx=1.2),
             FrameSpec(2, dy=-0.5),
-            FrameSpec(1, scale_y=0.996),
+            FrameSpec(1),
         ),
     ),
     AnimationRow(
