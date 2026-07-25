@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import stat
 import subprocess
 import sys
 import zipfile
@@ -34,7 +35,17 @@ def should_include(path: Path) -> bool:
 
 
 def add_file(archive: zipfile.ZipFile, path: Path, arcname: str) -> None:
-    archive.write(path, arcname=arcname, compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
+    info = zipfile.ZipInfo(arcname, date_time=(1980, 1, 1, 0, 0, 0))
+    info.create_system = 3
+    normalized_mode = 0o755 if path.stat().st_mode & stat.S_IXUSR else 0o644
+    info.external_attr = (stat.S_IFREG | normalized_mode) << 16
+    info.compress_type = zipfile.ZIP_DEFLATED
+    archive.writestr(
+        info,
+        path.read_bytes(),
+        compress_type=zipfile.ZIP_DEFLATED,
+        compresslevel=9,
+    )
 
 
 def sha256(path: Path) -> str:

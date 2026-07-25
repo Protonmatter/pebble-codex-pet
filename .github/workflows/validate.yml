@@ -16,16 +16,19 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: "3.12"
           cache: pip
 
       - name: Install dependencies
-        run: python -m pip install --requirement requirements.txt
+        run: python -m pip install --require-hashes --requirement requirements.txt
+
+      - name: Run adversarial and regression tests
+        run: python -m unittest discover --start-directory tests --verbose
 
       # Validate the asset that is actually committed and shipped, before any
       # rebuild can overwrite it.
@@ -33,26 +36,30 @@ jobs:
         run: python scripts/verify_pebble_pose_pet.py pebble-poses qa/validation.json
 
       # Reproducibility gate: rebuild from source into an isolated directory
-      # (leaving the committed assets untouched) and verify that output too.
+      # (leaving the committed assets untouched), verify it, and compare every
+      # generated artifact semantically with the committed version.
       - name: Rebuild assets in an isolated directory
         run: |
           python scripts/build_pebble_pose_pet.py \
-            --out-dir build/pebble-poses \
-            --poses-dir build/poses \
-            --contact-sheet build/preview/contact-sheet.png \
-            --gif build/preview/animation-preview.gif \
-            --rows-dir build/preview/rows \
-            --animation-map build/docs/animation-map.json
+            --out-dir build/repro/pebble-poses \
+            --poses-dir build/repro/source/poses \
+            --contact-sheet build/repro/preview/pebble-poses-contact-sheet.png \
+            --gif build/repro/preview/pebble-poses-animation-preview.gif \
+            --rows-dir build/repro/preview/rows \
+            --animation-map build/repro/docs/animation-map.json
 
       - name: Verify the rebuilt atlas
-        run: python scripts/verify_pebble_pose_pet.py build/pebble-poses
+        run: python scripts/verify_pebble_pose_pet.py build/repro/pebble-poses
+
+      - name: Compare committed and rebuilt outputs
+        run: python scripts/compare_build_outputs.py . build/repro
 
       # Packages the committed (already-verified) runtime asset.
       - name: Package releases
         run: python scripts/package_release.py
 
       - name: Upload validation and release artifacts
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: pebble-poses-build
           path: |
