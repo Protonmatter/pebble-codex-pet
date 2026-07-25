@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
-import sys
 from collections import deque
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 FRAME_W = 192
 FRAME_H = 208
@@ -58,9 +58,7 @@ def frame_hash(frame: Image.Image) -> str:
     return hashlib.sha256(frame.tobytes()).hexdigest()
 
 
-def main() -> None:
-    pet_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(__file__).resolve().parents[1] / "pebble-poses"
-    report_path = Path(sys.argv[2]) if len(sys.argv) > 2 else None
+def verify_pet(pet_dir: Path, report_path: Path | None = None) -> dict[str, object]:
     metadata_path = pet_dir / "pet.json"
     sheet_path = pet_dir / "spritesheet.png"
 
@@ -71,7 +69,10 @@ def main() -> None:
     if sheet_path.stat().st_size > MAX_BYTES:
         fail(f"spritesheet exceeds 20 MiB: {sheet_path.stat().st_size} bytes")
 
-    metadata = json.loads(metadata_path.read_text())
+    try:
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        fail(f"could not read valid UTF-8 JSON from {metadata_path}: {exc}")
     expected_metadata = {
         "id": "pebble-poses",
         "displayName": "Pebble Poses",
@@ -81,9 +82,25 @@ def main() -> None:
     if metadata != expected_metadata:
         fail(f"pet.json does not match expected metadata: {metadata}")
 
-    image = Image.open(sheet_path).convert("RGBA")
-    if image.size != EXPECTED_SIZE:
-        fail(f"spritesheet must be {EXPECTED_SIZE}, got {image.size}")
+    try:
+        with Image.open(sheet_path) as source:
+            detected_format = source.format
+            detected_mime = Image.MIME.get(detected_format or "")
+            if detected_format != "PNG" or detected_mime != "image/png":
+                fail(
+                    "spritesheet.png must contain PNG-encoded bytes, "
+                    f"got format={detected_format!r} mime={detected_mime!r}"
+                )
+            if source.size != EXPECTED_SIZE:
+                fail(f"spritesheet must be {EXPECTED_SIZE}, got {source.size}")
+            if source.mode not in {"RGBA", "LA", "P"}:
+                fail(f"spritesheet PNG must support transparency, got mode {source.mode!r}")
+            if source.mode == "P" and "transparency" not in source.info:
+                fail("palette spritesheet PNG has no transparency information")
+            source.load()
+            image = source.convert("RGBA")
+    except (OSError, UnidentifiedImageError) as exc:
+        fail(f"could not decode {sheet_path} as PNG: {exc}")
 
     raw = image.tobytes()
     residue_pixels = 0
@@ -142,7 +159,8 @@ def main() -> None:
         "ok": True,
         "petDir": str(pet_dir.resolve()),
         "spritesheet": str(sheet_path.resolve()),
-        "format": Image.open(sheet_path).format,
+        "format": detected_format,
+        "mimeType": detected_mime,
         "size": list(image.size),
         "bytes": sheet_path.stat().st_size,
         "transparentRgbResiduePixels": residue_pixels,
@@ -150,9 +168,23 @@ def main() -> None:
     }
     if report_path:
         report_path.parent.mkdir(parents=True, exist_ok=True)
-        report_path.write_text(json.dumps(report, indent=2) + "\n")
+        report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
         print(f"wrote {report_path}")
     print("verify ok")
+    return report
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Validate the Pebble Poses runtime package.")
+    parser.add_argument(
+        "pet_dir",
+        nargs="?",
+        type=Path,
+        default=Path(__file__).resolve().parents[1] / "pebble-poses",
+    )
+    parser.add_argument("report_path", nargs="?", type=Path)
+    args = parser.parse_args()
+    verify_pet(args.pet_dir, args.report_path)
 
 
 if __name__ == "__main__":

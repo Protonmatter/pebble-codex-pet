@@ -38,16 +38,17 @@ Official references:
 | 7 | `running` | 0–5 | 120 ms each; final 220 ms |
 | 8 | `review` | 0–5 | 150 ms each; final 280 ms |
 
-The exact pose selection and per-frame transforms are recorded in [`docs/animation-map.json`](docs/animation-map.json).
+The exact approved source frame for every runtime cell is recorded in
+[`docs/animation-map.json`](docs/animation-map.json).
 
 ## Requirements
 
 - Python 3.10 or later
-- Pillow 10–12
+- Pillow 12.2.0
 - Bash for the installer
 
 ```bash
-python3 -m pip install -r requirements.txt
+python3 -m pip install --require-hashes --requirement requirements.txt
 ```
 
 ## Build
@@ -72,6 +73,9 @@ docs/animation-map.json
 ```
 
 `spritesheet.png` is the packaged runtime asset. The lossless WebP is retained as an alternate QA/build artifact.
+Runtime rows are composed from the approved 192×208 PNG frames in
+`source/rows/`; `source/poses/` remains a deterministic extraction of the
+original production-art board for reference.
 
 ## Verify
 
@@ -81,13 +85,22 @@ python3 scripts/verify_pebble_pose_pet.py pebble-poses qa/validation.json
 
 Validation fails on:
 
-- incorrect metadata, dimensions, or file size
+- invalid file encoding, incorrect metadata, dimensions, or file size
 - nontransparent unused cells
 - empty required frames
 - clipped frames or insufficient padding
 - disconnected sprite components
 - fully transparent pixels retaining hidden RGB values
 - animation rows with insufficient frame variation
+
+Run the regression and adversarial tests with:
+
+```bash
+python3 -m unittest discover --start-directory tests --verbose
+```
+
+CI also rebuilds every generated artifact in isolation and compares decoded
+pixels, GIF timing, and JSON semantics with the committed outputs.
 
 ## Install locally
 
@@ -119,7 +132,7 @@ After installation, refresh the pet list in ChatGPT desktop or open the Codex CL
 python3 scripts/package_release.py
 ```
 
-This verifies the atlas before creating:
+This verifies the atlas before creating byte-reproducible archives:
 
 ```text
 dist/pebble-poses-runtime.zip
@@ -128,7 +141,15 @@ dist/SHA256SUMS
 ```
 
 The runtime archive contains only the installable pet folder. The source archive excludes `.git`, caches, bytecode, and previous release output.
+Pushing a `v*` tag runs the same verification and reproducibility gates,
+publishes both archives with checksums, and attaches a GitHub build-provenance
+attestation.
 
 ## Source-art note
 
-This version reconstructs all animation rows from the supplied 18-pose art board. Directional movement is represented as a shell-roll sequence because the source board does not contain a dedicated eight-frame gait in each direction. The next visual-quality step is to redraw those two directional strips and remove the remaining source-art ground pebbles at the artwork level while preserving Pebble’s identity.
+The runtime atlas uses dedicated, state-specific animation frames derived from
+the Pebble production art. The left movement row is a deterministic mirror of
+the approved right movement row, keeping frame order, scale, and registration
+exactly paired. Runtime frames contain no floor scenery or detached debris.
+See [`docs/ASSET-PROVENANCE.md`](docs/ASSET-PROVENANCE.md) for derivation
+details.

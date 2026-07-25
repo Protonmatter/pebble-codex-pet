@@ -1,0 +1,71 @@
+name: Release Pebble Pet
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  id-token: write
+  attestations: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out tagged source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install locked dependencies
+        run: python -m pip install --require-hashes --requirement requirements.txt
+
+      - name: Run tests
+        run: python -m unittest discover --start-directory tests --verbose
+
+      - name: Verify committed runtime
+        run: python scripts/verify_pebble_pose_pet.py pebble-poses qa/validation.json
+
+      - name: Rebuild and compare generated assets
+        run: |
+          python scripts/build_pebble_pose_pet.py \
+            --out-dir build/repro/pebble-poses \
+            --poses-dir build/repro/source/poses \
+            --contact-sheet build/repro/preview/pebble-poses-contact-sheet.png \
+            --gif build/repro/preview/pebble-poses-animation-preview.gif \
+            --rows-dir build/repro/preview/rows \
+            --animation-map build/repro/docs/animation-map.json
+          python scripts/verify_pebble_pose_pet.py build/repro/pebble-poses
+          python scripts/compare_build_outputs.py . build/repro
+
+      - name: Build deterministic release archives
+        run: python scripts/package_release.py
+
+      - name: Attest release archives
+        uses: actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4
+        with:
+          subject-path: |
+            dist/pebble-poses-runtime.zip
+            dist/pebble-poses-source.zip
+            dist/SHA256SUMS
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            dist/pebble-poses-runtime.zip \
+            dist/pebble-poses-source.zip \
+            dist/SHA256SUMS \
+            --repo "$GITHUB_REPOSITORY" \
+            --verify-tag \
+            --generate-notes \
+            --title "$GITHUB_REF_NAME"

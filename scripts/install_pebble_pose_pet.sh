@@ -46,11 +46,20 @@ done
 
 python3 "$SCRIPT_DIR/verify_pebble_pose_pet.py" "$SOURCE_DIR"
 
-TARGET_PARENT="$(dirname "$TARGET_DIR")"
-mkdir -p "$TARGET_PARENT"
+SOURCE_DIR="$(cd "$SOURCE_DIR" && pwd -P)"
+TARGET_PARENT="$(dirname -- "$TARGET_DIR")"
+TARGET_NAME="$(basename -- "$TARGET_DIR")"
+mkdir -p -- "$TARGET_PARENT"
+TARGET_PARENT="$(cd "$TARGET_PARENT" && pwd -P)"
+TARGET_DIR="$TARGET_PARENT/$TARGET_NAME"
+if [[ "$SOURCE_DIR" == "$TARGET_DIR" ]]; then
+  echo "Source and target must be different directories: $SOURCE_DIR" >&2
+  exit 2
+fi
+
 STAGING_DIR="$(mktemp -d "$TARGET_PARENT/.pebble-poses.install.XXXXXX")"
 cleanup() {
-  rm -rf "$STAGING_DIR"
+  rm -rf -- "$STAGING_DIR"
 }
 trap cleanup EXIT
 
@@ -59,12 +68,18 @@ install -m 0644 "$SOURCE_DIR/spritesheet.png" "$STAGING_DIR/spritesheet.png"
 
 BACKUP_DIR=""
 if [[ -e "$TARGET_DIR" ]]; then
-  BACKUP_DIR="${TARGET_DIR}.backup.$(date -u +%Y%m%dT%H%M%SZ)"
-  mv "$TARGET_DIR" "$BACKUP_DIR"
+  BACKUP_BASE="${TARGET_DIR}.backup.$(date -u +%Y%m%dT%H%M%SZ)"
+  BACKUP_DIR="$BACKUP_BASE"
+  BACKUP_INDEX=0
+  while [[ -e "$BACKUP_DIR" ]]; do
+    BACKUP_INDEX=$((BACKUP_INDEX + 1))
+    BACKUP_DIR="${BACKUP_BASE}.${BACKUP_INDEX}"
+  done
+  mv -- "$TARGET_DIR" "$BACKUP_DIR"
 fi
 
-if ! mv "$STAGING_DIR" "$TARGET_DIR"; then
-  [[ -n "$BACKUP_DIR" && -e "$BACKUP_DIR" ]] && mv "$BACKUP_DIR" "$TARGET_DIR"
+if ! mv -- "$STAGING_DIR" "$TARGET_DIR"; then
+  [[ -n "$BACKUP_DIR" && -e "$BACKUP_DIR" ]] && mv -- "$BACKUP_DIR" "$TARGET_DIR"
   exit 1
 fi
 trap - EXIT

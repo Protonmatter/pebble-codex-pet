@@ -62,135 +62,71 @@ class AnimationRow:
     key: str
     purpose: str
     durations_ms: tuple[int, ...]
-    frames: tuple[FrameSpec, ...]
+    frames: tuple[FrameSpec, ...] = ()
+    source_frames: tuple[str, ...] = ()
 
 
-# Current Codex V1 atlas contract: rows and used columns are fixed. Unused
+def source_frame_paths(state: str, count: int) -> tuple[str, ...]:
+    return tuple(f"{state}/{index:02d}.png" for index in range(count))
+
+
+# Current Codex V1 atlas contract: rows and used columns are fixed. Runtime
+# frames come from approved, state-specific sources under source/rows. Unused
 # cells are intentionally left transparent.
 ANIMATION_ROWS: tuple[AnimationRow, ...] = (
     AnimationRow(
         "idle",
         "Calm, low-distraction breathing and a brief curious glance.",
         (280, 110, 110, 140, 140, 320),
-        (
-            # Sub-pixel scale/offset tweaks render identically, so the breathing
-            # bob steps in whole pixels (rest, rise, peak) and the descent adds a
-            # ~1px lateral drift. That keeps five distinct frames, one above the
-            # verifier's idle uniqueness floor of four.
-            FrameSpec(1),
-            FrameSpec(1, dy=-1.0),
-            FrameSpec(1, dy=-2.0),
-            FrameSpec(1, dy=-1.0, dx=1.2),
-            FrameSpec(2, dy=-0.5),
-            FrameSpec(1),
-        ),
+        source_frames=source_frame_paths("idle", 6),
     ),
     AnimationRow(
         "running-right",
-        "Directional shell-roll locomotion toward the right.",
+        "Directional shell-drag locomotion toward the right.",
         (120, 120, 120, 120, 120, 120, 120, 220),
-        (
-            FrameSpec(17, dx=-4.0, dy=0.8, rotate=-5.0, mirror=True),
-            FrameSpec(17, dx=-2.0, dy=0.2, rotate=-2.5, mirror=True),
-            FrameSpec(18, dx=-0.5, dy=-0.5, rotate=-1.0, mirror=True),
-            FrameSpec(17, dx=1.0, dy=-0.2, rotate=1.5, mirror=True),
-            FrameSpec(17, dx=2.5, dy=0.4, rotate=4.0, mirror=True),
-            FrameSpec(18, dx=4.0, dy=-0.8, rotate=2.0, mirror=True),
-            FrameSpec(17, dx=5.0, dy=0.0, rotate=6.0, mirror=True),
-            FrameSpec(18, dx=6.0, dy=-0.4, rotate=3.0, mirror=True),
-        ),
+        source_frames=source_frame_paths("running-right", 8),
     ),
     AnimationRow(
         "running-left",
-        "Directional shell-roll locomotion toward the left.",
+        "Directional shell-drag locomotion toward the left.",
         (120, 120, 120, 120, 120, 120, 120, 220),
-        (
-            FrameSpec(17, dx=4.0, dy=0.8, rotate=5.0),
-            FrameSpec(17, dx=2.0, dy=0.2, rotate=2.5),
-            FrameSpec(18, dx=0.5, dy=-0.5, rotate=1.0),
-            FrameSpec(17, dx=-1.0, dy=-0.2, rotate=-1.5),
-            FrameSpec(17, dx=-2.5, dy=0.4, rotate=-4.0),
-            FrameSpec(18, dx=-4.0, dy=-0.8, rotate=-2.0),
-            FrameSpec(17, dx=-5.0, dy=0.0, rotate=-6.0),
-            FrameSpec(18, dx=-6.0, dy=-0.4, rotate=-3.0),
-        ),
+        source_frames=source_frame_paths("running-left", 8),
     ),
     AnimationRow(
         "waving",
         "Greeting with a clear raise, wave, and return.",
         (140, 140, 140, 280),
-        (
-            FrameSpec(1),
-            FrameSpec(5, dy=-0.7),
-            FrameSpec(6, dx=0.8, dy=-2.0, rotate=0.3),
-            FrameSpec(5, dy=-0.4),
-        ),
+        source_frames=source_frame_paths("waving", 4),
     ),
     AnimationRow(
         "jumping",
         "Anticipation, lift, peak, descent, and settle.",
         (140, 140, 140, 140, 280),
-        (
-            FrameSpec(12, dy=1.0, scale_x=1.01, scale_y=0.985),
-            FrameSpec(11, dy=-3.0, scale_x=1.004, scale_y=1.005),
-            FrameSpec(11, dy=-8.0, scale_x=1.012, scale_y=1.012),
-            FrameSpec(11, dy=-3.5, scale_x=1.004, scale_y=1.005),
-            FrameSpec(12, dy=0.5, scale_x=1.005, scale_y=0.992),
-        ),
+        source_frames=source_frame_paths("jumping", 5),
     ),
     AnimationRow(
         "failed",
         "Readable confused, deflated, and head-down failure reaction.",
         (140, 140, 140, 140, 140, 140, 140, 240),
-        (
-            FrameSpec(10),
-            FrameSpec(13, dy=-0.5),
-            FrameSpec(15, dx=-0.4),
-            FrameSpec(14, dy=0.5),
-            FrameSpec(16, dy=0.8),
-            FrameSpec(14, dy=0.7),
-            FrameSpec(15, dx=0.3),
-            FrameSpec(10),
-        ),
+        source_frames=source_frame_paths("failed", 8),
     ),
     AnimationRow(
         "waiting",
         "Expectant asking pose for approval, help, or user input.",
         (150, 150, 150, 150, 150, 260),
-        (
-            FrameSpec(1),
-            FrameSpec(2, dy=-0.6),
-            FrameSpec(7, dx=-0.6),
-            FrameSpec(7, dx=0.4, dy=-0.4),
-            FrameSpec(13, dy=-0.4),
-            FrameSpec(1),
-        ),
+        source_frames=source_frame_paths("waiting", 6),
     ),
     AnimationRow(
         "running",
         "Focused processing, inspecting, building, and active work.",
         (120, 120, 120, 120, 120, 220),
-        (
-            FrameSpec(7, dx=-0.5),
-            FrameSpec(8, dx=0.2, dy=-0.6),
-            FrameSpec(8, dx=0.9, dy=-1.0, scale_y=1.004),
-            FrameSpec(9, dx=-1.0, dy=-0.3),
-            FrameSpec(10, dx=0.4),
-            FrameSpec(7),
-        ),
+        source_frames=source_frame_paths("running", 6),
     ),
     AnimationRow(
         "review",
         "Focused inspection, thought, decision, and return.",
         (150, 150, 150, 150, 150, 280),
-        (
-            FrameSpec(10),
-            FrameSpec(7, dx=-0.5),
-            FrameSpec(2, dy=-0.6),
-            FrameSpec(13, dy=-0.5),
-            FrameSpec(15, dx=-0.3),
-            FrameSpec(10),
-        ),
+        source_frames=source_frame_paths("review", 6),
     ),
 )
 
@@ -407,15 +343,33 @@ def render_frame(pose: Pose, spec: FrameSpec) -> Image.Image:
     return normalize_transparent_pixels(frame)
 
 
-def build_sheet(poses: list[Pose]) -> Image.Image:
+def load_source_frame(source_rows_dir: Path, relative: str) -> Image.Image:
+    path = source_rows_dir / relative
+    if not path.is_file():
+        raise ValueError(f"missing approved source frame: {path}")
+    with Image.open(path) as source:
+        if source.format != "PNG":
+            raise ValueError(f"approved source frame must be PNG: {path}")
+        frame = source.convert("RGBA")
+    if frame.size != (FRAME_W, FRAME_H):
+        raise ValueError(f"approved source frame must be {FRAME_W}x{FRAME_H}: {path}")
+    return remove_tiny_components(frame)
+
+
+def build_sheet(poses: list[Pose], source_rows_dir: Path) -> Image.Image:
     sheet = Image.new("RGBA", (SHEET_W, SHEET_H), (0, 0, 0, 0))
     for row_index, row in enumerate(ANIMATION_ROWS):
-        if len(row.frames) != len(row.durations_ms):
+        frame_count = len(row.source_frames) if row.source_frames else len(row.frames)
+        if frame_count != len(row.durations_ms):
             raise ValueError(f"row {row.key} frame/duration count mismatch")
-        if len(row.frames) > COLS:
+        if frame_count > COLS:
             raise ValueError(f"row {row.key} exceeds {COLS} columns")
-        for col, spec in enumerate(row.frames):
-            frame = render_frame(poses[spec.pose - 1], spec)
+        for col in range(frame_count):
+            if row.source_frames:
+                frame = load_source_frame(source_rows_dir, row.source_frames[col])
+            else:
+                spec = row.frames[col]
+                frame = render_frame(poses[spec.pose - 1], spec)
             sheet.alpha_composite(frame, (col * FRAME_W, row_index * FRAME_H))
     return normalize_transparent_pixels(sheet)
 
@@ -438,7 +392,7 @@ def make_animation_previews(sheet: Image.Image, output_gif: Path, rows_dir: Path
     combined_durations: list[int] = []
     for row_index, row in enumerate(ANIMATION_ROWS):
         frames: list[Image.Image] = []
-        for col in range(len(row.frames)):
+        for col in range(len(row.durations_ms)):
             frame = sheet.crop((col * FRAME_W, row_index * FRAME_H, (col + 1) * FRAME_W, (row_index + 1) * FRAME_H))
             rendered = preview_frame(frame).resize((288, 312), Image.Resampling.LANCZOS)
             frames.append(rendered)
@@ -489,9 +443,16 @@ def write_animation_map(path: Path) -> None:
                 "index": index,
                 "key": row.key,
                 "purpose": row.purpose,
-                "usedColumns": f"0-{len(row.frames) - 1}",
+                "usedColumns": f"0-{len(row.durations_ms) - 1}",
                 "durationsMs": list(row.durations_ms),
-                "frames": [asdict(frame) | {"poseName": POSE_NAMES[frame.pose - 1]} for frame in row.frames],
+                "frames": (
+                    [{"sourceFrame": f"source/rows/{path}"} for path in row.source_frames]
+                    if row.source_frames
+                    else [
+                        asdict(frame) | {"poseName": POSE_NAMES[frame.pose - 1]}
+                        for frame in row.frames
+                    ]
+                ),
             }
             for index, row in enumerate(ANIMATION_ROWS)
         ],
@@ -509,6 +470,11 @@ def main() -> None:
     )
     parser.add_argument("--out-dir", type=Path, default=project_root / "pebble-poses")
     parser.add_argument("--poses-dir", type=Path, default=project_root / "source" / "poses")
+    parser.add_argument(
+        "--source-rows-dir",
+        type=Path,
+        default=project_root / "source" / "rows",
+    )
     parser.add_argument(
         "--contact-sheet",
         type=Path,
@@ -540,7 +506,7 @@ def main() -> None:
         pose.image.save(args.poses_dir / f"{pose_number:02d}_{pose_name}.png")
         poses.append(pose)
 
-    sheet = build_sheet(poses)
+    sheet = build_sheet(poses, args.source_rows_dir)
     png_path = args.out_dir / "spritesheet.png"
     webp_path = args.out_dir / "spritesheet.webp"
     sheet.save(png_path)
