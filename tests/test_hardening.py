@@ -14,7 +14,7 @@ from pathlib import Path
 from PIL import Image, ImageOps
 
 from scripts.compare_build_outputs import compare_image
-from scripts.package_release import add_file
+from scripts.package_release import EXCLUDED_DIRS, add_file
 
 ROOT = Path(__file__).resolve().parents[1]
 VERIFY = ROOT / "scripts" / "verify_pebble_pose_pet.py"
@@ -40,23 +40,30 @@ class VerifierAdversarialTests(unittest.TestCase):
         )
 
     def mutate_sheet(self, callback) -> None:
-        sheet_path = self.pet_dir / "spritesheet.png"
+        sheet_path = self.pet_dir / "spritesheet.webp"
         with Image.open(sheet_path) as source:
             image = source.convert("RGBA")
         callback(image)
-        image.save(sheet_path, format="PNG")
+        image.save(
+            sheet_path,
+            format="WEBP",
+            lossless=True,
+            quality=100,
+            method=6,
+            exact=True,
+        )
 
     def test_committed_package_passes(self) -> None:
         result = self.run_verify()
         self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
 
-    def test_tiff_masquerading_as_png_is_rejected(self) -> None:
-        sheet_path = self.pet_dir / "spritesheet.png"
+    def test_tiff_masquerading_as_webp_is_rejected(self) -> None:
+        sheet_path = self.pet_dir / "spritesheet.webp"
         with Image.open(sheet_path) as source:
             source.convert("RGBA").save(sheet_path, format="TIFF", compression="tiff_deflate")
         result = self.run_verify()
         self.assertNotEqual(result.returncode, 0)
-        self.assertIn("PNG-encoded bytes", result.stderr + result.stdout)
+        self.assertIn("WebP-encoded bytes", result.stderr + result.stdout)
 
     def test_artwork_in_unused_cell_is_rejected(self) -> None:
         self.mutate_sheet(lambda image: image.putpixel((7 * 192 + 96, 96), (1, 1, 1, 255)))
@@ -95,7 +102,7 @@ class VerifierAdversarialTests(unittest.TestCase):
         self.assertNotIn("Traceback", result.stderr + result.stdout)
 
     def test_oversize_payload_is_rejected(self) -> None:
-        with (self.pet_dir / "spritesheet.png").open("ab") as stream:
+        with (self.pet_dir / "spritesheet.webp").open("ab") as stream:
             stream.write(b"\0" * (20 * 1024 * 1024))
         result = self.run_verify()
         self.assertNotEqual(result.returncode, 0)
@@ -131,6 +138,9 @@ class BuildComparisonTests(unittest.TestCase):
 
 
 class PackagingAndInstallerTests(unittest.TestCase):
+    def test_source_archive_excludes_virtual_environments(self) -> None:
+        self.assertTrue({".venv", "venv"}.issubset(EXCLUDED_DIRS))
+
     def test_zip_member_metadata_is_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
@@ -187,7 +197,7 @@ class PackagingAndInstallerTests(unittest.TestCase):
             )
 
             self.assertEqual(result.returncode, 0, result.stderr + result.stdout)
-            self.assertTrue((target / "spritesheet.png").is_file())
+            self.assertTrue((target / "spritesheet.webp").is_file())
             self.assertEqual(
                 (first_backup / "sentinel.txt").read_text(encoding="utf-8"),
                 "keep me\n",
@@ -201,13 +211,37 @@ class PackagingAndInstallerTests(unittest.TestCase):
 class MetadataTests(unittest.TestCase):
     def test_animation_map_is_valid_json(self) -> None:
         data = json.loads((ROOT / "docs" / "animation-map.json").read_text(encoding="utf-8"))
-        self.assertEqual(data["grid"], {"columns": 8, "rows": 9})
+        self.assertEqual(data["contract"], "Codex custom pet V2")
+        self.assertEqual(data["grid"], {"columns": 8, "rows": 11})
+        self.assertEqual(
+            data["rows"][9]["directionsDegrees"] + data["rows"][10]["directionsDegrees"],
+            [index * 22.5 for index in range(16)],
+        )
+
+    def test_manifest_declares_v2_webp(self) -> None:
+        data = json.loads((PET_DIR / "pet.json").read_text(encoding="utf-8"))
+        self.assertEqual(data["spriteVersionNumber"], 2)
+        self.assertEqual(data["spritesheetPath"], "spritesheet.webp")
+
+    def test_direction_semantics_cover_all_v2_directions(self) -> None:
+        semantics = json.loads(
+            (ROOT / "qa" / "direction-semantics.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            [entry["direction"] for entry in semantics["directions"]],
+            [f"{index * 22.5:05.1f}".rstrip("0").rstrip(".") for index in range(16)],
+        )
+        self.assertNotIn("fail", {entry["verdict"] for entry in semantics["directions"]})
+        final_qa = json.loads(
+            (ROOT / "qa" / "final-visual-qa.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(final_qa["visualQa"], "pass")
 
 
 class ArtworkRegressionTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
-        with Image.open(PET_DIR / "spritesheet.png") as source:
+        with Image.open(PET_DIR / "spritesheet.webp") as source:
             cls.sheet = source.convert("RGBA")
 
     @classmethod
@@ -251,6 +285,11 @@ class ArtworkRegressionTests(unittest.TestCase):
         heights = [bbox[3] - bbox[1] for bbox in bboxes if bbox is not None]
         self.assertLessEqual(max(widths) - min(widths), 8)
         self.assertLessEqual(max(heights) - min(heights), 10)
+
+    def test_all_sixteen_look_directions_are_populated_and_distinct(self) -> None:
+        look_frames = [self.frame(row, column) for row in (9, 10) for column in range(8)]
+        self.assertTrue(all(frame.getchannel("A").getbbox() is not None for frame in look_frames))
+        self.assertEqual(len({frame.tobytes() for frame in look_frames}), 16)
 
 
 if __name__ == "__main__":

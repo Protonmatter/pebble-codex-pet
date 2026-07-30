@@ -12,7 +12,7 @@ from PIL import Image, ImageFilter, ImageOps
 FRAME_W = 192
 FRAME_H = 208
 COLS = 8
-ROWS = 9
+ROWS = 11
 SHEET_W = FRAME_W * COLS
 SHEET_H = FRAME_H * ROWS
 
@@ -64,13 +64,15 @@ class AnimationRow:
     durations_ms: tuple[int, ...]
     frames: tuple[FrameSpec, ...] = ()
     source_frames: tuple[str, ...] = ()
+    directions_degrees: tuple[float, ...] = ()
+    neutral_column: int | None = None
 
 
 def source_frame_paths(state: str, count: int) -> tuple[str, ...]:
     return tuple(f"{state}/{index:02d}.png" for index in range(count))
 
 
-# Current Codex V1 atlas contract: rows and used columns are fixed. Runtime
+# Current Codex V2 atlas contract: rows and used columns are fixed. Runtime
 # frames come from approved, state-specific sources under source/rows. Unused
 # cells are intentionally left transparent.
 ANIMATION_ROWS: tuple[AnimationRow, ...] = (
@@ -78,7 +80,8 @@ ANIMATION_ROWS: tuple[AnimationRow, ...] = (
         "idle",
         "Calm, low-distraction breathing and a brief curious glance.",
         (280, 110, 110, 140, 140, 320),
-        source_frames=source_frame_paths("idle", 6),
+        source_frames=source_frame_paths("idle", 7),
+        neutral_column=6,
     ),
     AnimationRow(
         "running-right",
@@ -127,6 +130,20 @@ ANIMATION_ROWS: tuple[AnimationRow, ...] = (
         "Focused inspection, thought, decision, and return.",
         (150, 150, 150, 150, 150, 280),
         source_frames=source_frame_paths("review", 6),
+    ),
+    AnimationRow(
+        "look-directions-a",
+        "Clockwise look directions from up through down-right.",
+        (),
+        source_frames=source_frame_paths("look-directions-a", 8),
+        directions_degrees=(0.0, 22.5, 45.0, 67.5, 90.0, 112.5, 135.0, 157.5),
+    ),
+    AnimationRow(
+        "look-directions-b",
+        "Clockwise look directions from down through up-left.",
+        (),
+        source_frames=source_frame_paths("look-directions-b", 8),
+        directions_degrees=(180.0, 202.5, 225.0, 247.5, 270.0, 292.5, 315.0, 337.5),
     ),
 )
 
@@ -353,15 +370,20 @@ def load_source_frame(source_rows_dir: Path, relative: str) -> Image.Image:
         frame = source.convert("RGBA")
     if frame.size != (FRAME_W, FRAME_H):
         raise ValueError(f"approved source frame must be {FRAME_W}x{FRAME_H}: {path}")
-    return remove_tiny_components(frame)
+    return normalize_transparent_pixels(frame)
 
 
 def build_sheet(poses: list[Pose], source_rows_dir: Path) -> Image.Image:
     sheet = Image.new("RGBA", (SHEET_W, SHEET_H), (0, 0, 0, 0))
     for row_index, row in enumerate(ANIMATION_ROWS):
         frame_count = len(row.source_frames) if row.source_frames else len(row.frames)
-        if frame_count != len(row.durations_ms):
+        animation_frame_count = frame_count - (1 if row.neutral_column is not None else 0)
+        if row.durations_ms and animation_frame_count != len(row.durations_ms):
             raise ValueError(f"row {row.key} frame/duration count mismatch")
+        if row.directions_degrees and frame_count != len(row.directions_degrees):
+            raise ValueError(f"row {row.key} frame/direction count mismatch")
+        if not row.durations_ms and not row.directions_degrees:
+            raise ValueError(f"row {row.key} has no timing or direction contract")
         if frame_count > COLS:
             raise ValueError(f"row {row.key} exceeds {COLS} columns")
         for col in range(frame_count):
@@ -382,7 +404,7 @@ def preview_frame(frame: Image.Image, background: tuple[int, int, int] = (44, 44
 
 def make_contact_sheet(sheet: Image.Image, path: Path) -> None:
     preview = preview_frame(sheet)
-    preview.thumbnail((960, 1170), Image.Resampling.LANCZOS)
+    preview.thumbnail((960, round(960 * SHEET_H / SHEET_W)), Image.Resampling.LANCZOS)
     preview.save(path)
 
 
@@ -391,18 +413,21 @@ def make_animation_previews(sheet: Image.Image, output_gif: Path, rows_dir: Path
     combined: list[Image.Image] = []
     combined_durations: list[int] = []
     for row_index, row in enumerate(ANIMATION_ROWS):
+        source_frame_count = len(row.source_frames) if row.source_frames else len(row.frames)
+        frame_count = len(row.durations_ms) if row.durations_ms else source_frame_count
+        preview_durations = row.durations_ms or tuple(160 for _ in range(frame_count))
         frames: list[Image.Image] = []
-        for col in range(len(row.durations_ms)):
+        for col in range(frame_count):
             frame = sheet.crop((col * FRAME_W, row_index * FRAME_H, (col + 1) * FRAME_W, (row_index + 1) * FRAME_H))
             rendered = preview_frame(frame).resize((288, 312), Image.Resampling.LANCZOS)
             frames.append(rendered)
             combined.append(rendered)
-        combined_durations.extend(row.durations_ms)
+        combined_durations.extend(preview_durations)
         frames[0].save(
             rows_dir / f"{row_index:02d}-{row.key}.gif",
             save_all=True,
             append_images=frames[1:],
-            duration=list(row.durations_ms),
+            duration=list(preview_durations),
             loop=0,
             optimize=False,
         )
@@ -424,7 +449,8 @@ def write_pet_json(path: Path) -> None:
                 "id": PET_ID,
                 "displayName": DISPLAY_NAME,
                 "description": DESCRIPTION,
-                "spritesheetPath": "spritesheet.png",
+                "spriteVersionNumber": 2,
+                "spritesheetPath": "spritesheet.webp",
             },
             indent=2,
         )
@@ -433,29 +459,36 @@ def write_pet_json(path: Path) -> None:
 
 
 def write_animation_map(path: Path) -> None:
+    rows = []
+    for index, row in enumerate(ANIMATION_ROWS):
+        row_data: dict[str, object] = {
+            "index": index,
+            "key": row.key,
+            "purpose": row.purpose,
+            "usedColumns": f"0-{len(row.source_frames or row.frames) - 1}",
+            "frames": (
+                [{"sourceFrame": f"source/rows/{source_path}"} for source_path in row.source_frames]
+                if row.source_frames
+                else [
+                    asdict(frame) | {"poseName": POSE_NAMES[frame.pose - 1]}
+                    for frame in row.frames
+                ]
+            ),
+        }
+        if row.durations_ms:
+            row_data["durationsMs"] = list(row.durations_ms)
+        if row.directions_degrees:
+            row_data["directionsDegrees"] = list(row.directions_degrees)
+        if row.neutral_column is not None:
+            row_data["neutralColumn"] = row.neutral_column
+        rows.append(row_data)
+
     data = {
-        "contract": "Codex custom pet V1",
+        "contract": "Codex custom pet V2",
         "frameSize": {"width": FRAME_W, "height": FRAME_H},
         "grid": {"columns": COLS, "rows": ROWS},
         "poseNames": {str(i): name for i, name in enumerate(POSE_NAMES, start=1)},
-        "rows": [
-            {
-                "index": index,
-                "key": row.key,
-                "purpose": row.purpose,
-                "usedColumns": f"0-{len(row.durations_ms) - 1}",
-                "durationsMs": list(row.durations_ms),
-                "frames": (
-                    [{"sourceFrame": f"source/rows/{path}"} for path in row.source_frames]
-                    if row.source_frames
-                    else [
-                        asdict(frame) | {"poseName": POSE_NAMES[frame.pose - 1]}
-                        for frame in row.frames
-                    ]
-                ),
-            }
-            for index, row in enumerate(ANIMATION_ROWS)
-        ],
+        "rows": rows,
     }
     path.write_text(json.dumps(data, indent=2) + "\n")
 
@@ -510,7 +543,7 @@ def main() -> None:
     png_path = args.out_dir / "spritesheet.png"
     webp_path = args.out_dir / "spritesheet.webp"
     sheet.save(png_path)
-    sheet.save(webp_path, format="WEBP", lossless=True, method=6)
+    sheet.save(webp_path, format="WEBP", lossless=True, quality=100, method=6, exact=True)
     write_pet_json(args.out_dir / "pet.json")
     write_animation_map(args.animation_map)
     make_contact_sheet(sheet, args.contact_sheet)

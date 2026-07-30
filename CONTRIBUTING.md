@@ -35,8 +35,13 @@ same change as the source or build-logic change that produced them.
 - Keep each state visually distinct at a 192×208 cell size.
 - Do not add floor scenery, detached particles, text, UI, shadows, or effects.
 - Use a shared scale and registration within an animation row.
+- Preserve the fixed clockwise V2 look order and treat all four cardinal
+  directions as hard visual gates.
 - Record the source and derivation in `docs/ASSET-PROVENANCE.md`.
 - Inspect the contact sheet and all looping row previews before requesting review.
+- For artwork replacements, run the hatch-pet V2 despill and direction QA once
+  before committing the resulting source cells; do not despill already approved
+  source rows during routine rebuilds.
 
 ## Pull requests
 

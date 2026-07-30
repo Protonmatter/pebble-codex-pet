@@ -1,0 +1,10 @@
+{
+  "visualQa": "pass",
+  "qaNote": "The shared 1.30 scaling and recentering resolve the cross-state size pop; all 11 rows retain identity, baseline, cell margins, animation semantics, and an unreversed direction loop.",
+  "repairRows": [],
+  "reviewWarnings": [
+    "The 157.5 horizontal axis is subtle in isolation but resolves as down-right in the labeled loop.",
+    "The 112.5-to-135 metric outlier is normal bowed-pose progression without a visible snap.",
+    "The 337.5-to-000 diff, 11.5-pixel center shift, and 1.15 area ratio reflect the wrap into the full upward pose without clipping, baseline drift, identity change, reversal, or conspicuous size pop."
+  ]
+}

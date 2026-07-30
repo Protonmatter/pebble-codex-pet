@@ -16,7 +16,16 @@ RUNTIME_ZIP = DIST / "pebble-poses-runtime.zip"
 SOURCE_ZIP = DIST / "pebble-poses-source.zip"
 CHECKSUMS = DIST / "SHA256SUMS"
 
-EXCLUDED_DIRS = {".git", "dist", "build", "__pycache__", ".pytest_cache", ".mypy_cache"}
+EXCLUDED_DIRS = {
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".venv",
+    "__pycache__",
+    "build",
+    "dist",
+    "venv",
+}
 EXCLUDED_FILES = {".DS_Store"}
 EXCLUDED_SUFFIXES = {".pyc", ".pyo"}
 # Machine-generated report with host-specific paths; regenerated per run.
@@ -68,7 +77,7 @@ def main() -> None:
 
     with zipfile.ZipFile(RUNTIME_ZIP, "w") as archive:
         add_file(archive, PET_DIR / "pet.json", "pebble-poses/pet.json")
-        add_file(archive, PET_DIR / "spritesheet.png", "pebble-poses/spritesheet.png")
+        add_file(archive, PET_DIR / "spritesheet.webp", "pebble-poses/spritesheet.webp")
 
     with zipfile.ZipFile(SOURCE_ZIP, "w") as archive:
         for path in sorted(ROOT.rglob("*")):

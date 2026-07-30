@@ -7,15 +7,16 @@ Pebble Poses is a local custom pet package for ChatGPT desktop and compatible Co
 ```text
 pebble-poses/
 ├── pet.json
-└── spritesheet.png
+└── spritesheet.webp
 ```
 
-The runtime sprite sheet is a transparent PNG with the fixed Codex V1 geometry:
+The runtime sprite sheet is a lossless transparent WebP with the Codex V2 geometry:
 
-- `1536 × 1872` pixels
-- `8 × 9` cells
+- `1536 × 2288` pixels
+- `8 × 11` cells
 - `192 × 208` pixels per cell
 - fully transparent unused cells
+- 16 clockwise look directions in rows 9–10
 - under the `20 MiB` upload limit
 
 Official references:
@@ -28,7 +29,7 @@ Official references:
 
 | Row | State | Used columns | Timing |
 |---:|---|---:|---|
-| 0 | `idle` | 0–5 | 280, 110, 110, 140, 140, 320 ms |
+| 0 | `idle` | 0–6 | 0–5 animate at 280, 110, 110, 140, 140, 320 ms; 6 is the V2 neutral look frame |
 | 1 | `running-right` | 0–7 | 120 ms each; final 220 ms |
 | 2 | `running-left` | 0–7 | 120 ms each; final 220 ms |
 | 3 | `waving` | 0–3 | 140 ms each; final 280 ms |
@@ -37,6 +38,11 @@ Official references:
 | 6 | `waiting` | 0–5 | 150 ms each; final 260 ms |
 | 7 | `running` | 0–5 | 120 ms each; final 220 ms |
 | 8 | `review` | 0–5 | 150 ms each; final 280 ms |
+| 9 | `look-directions-a` | 0–7 | 000° through 157.5° in 22.5° steps |
+| 10 | `look-directions-b` | 0–7 | 180° through 337.5° in 22.5° steps |
+
+`000°` means up. The direction rows proceed clockwise in screen coordinates;
+neutral pointer input falls back to the idle animation.
 
 The exact approved source frame for every runtime cell is recorded in
 [`docs/animation-map.json`](docs/animation-map.json).
@@ -44,7 +50,7 @@ The exact approved source frame for every runtime cell is recorded in
 ## Requirements
 
 - Python 3.10 or later
-- Pillow 12.2.0
+- Pillow 12.3.0
 - Bash for the installer
 
 ```bash
@@ -72,10 +78,13 @@ source/poses/*.png
 docs/animation-map.json
 ```
 
-`spritesheet.png` is the packaged runtime asset. The lossless WebP is retained as an alternate QA/build artifact.
+`spritesheet.webp` is the packaged runtime asset. The PNG is retained as a
+lossless decoded QA/build artifact.
 Runtime rows are composed from the approved 192×208 PNG frames in
 `source/rows/`; `source/poses/` remains a deterministic extraction of the
-original production-art board for reference.
+original production-art board for reference. The committed source-row cells
+already contain the single approved V2 edge-despill result, so ordinary rebuilds
+must not apply chroma cleanup a second time.
 
 ## Verify
 
@@ -150,6 +159,8 @@ attestation.
 The runtime atlas uses dedicated, state-specific animation frames derived from
 the Pebble production art. The left movement row is a deterministic mirror of
 the approved right movement row, keeping frame order, scale, and registration
-exactly paired. Runtime frames contain no floor scenery or detached debris.
+exactly paired. The two coherent look rows form one approved clockwise 16-pose
+loop with unmistakable cardinal directions. Runtime frames contain no floor
+scenery or detached debris.
 See [`docs/ASSET-PROVENANCE.md`](docs/ASSET-PROVENANCE.md) for derivation
 details.
