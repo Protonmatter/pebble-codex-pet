@@ -27,6 +27,8 @@ GIF_PATHS = (
     "preview/rows/06-waiting.gif",
     "preview/rows/07-running.gif",
     "preview/rows/08-review.gif",
+    "preview/rows/09-look-directions-a.gif",
+    "preview/rows/10-look-directions-b.gif",
 )
 
 

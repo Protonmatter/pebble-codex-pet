@@ -1,5 +1,17 @@
 # Changelog
 
+## 3.0.0 - 2026-07-30
+
+- Upgraded the runtime package to the Codex V2 `8 × 11` atlas contract.
+- Added 16 clockwise look directions with validated up, right, down, and left
+  cardinal anchors and reviewed intermediate-direction continuity.
+- Changed the runtime manifest and release archive from the V1 PNG to a lossless
+  V2 WebP with `spriteVersionNumber: 2`.
+- Preserved the hardened standard animation rows already on `main`; the V2
+  migration adds only the approved neutral and look-direction cells.
+- Extended deterministic rebuild comparison, adversarial tests, installer,
+  documentation, previews, and release packaging for V2.
+
 ## 2.1.0 - 2026-07-24
 
 - Rebuilt all nine runtime rows from dedicated, state-specific source frames.

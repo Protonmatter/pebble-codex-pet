@@ -12,10 +12,10 @@ from PIL import Image, UnidentifiedImageError
 FRAME_W = 192
 FRAME_H = 208
 COLS = 8
-ROWS = 9
+ROWS = 11
 EXPECTED_SIZE = (FRAME_W * COLS, FRAME_H * ROWS)
 MAX_BYTES = 20 * 1024 * 1024
-ROW_COUNTS = (6, 8, 8, 4, 5, 8, 6, 6, 6)
+ROW_COUNTS = (7, 8, 8, 4, 5, 8, 6, 6, 6, 8, 8)
 ROW_NAMES = (
     "idle",
     "running-right",
@@ -26,6 +26,8 @@ ROW_NAMES = (
     "waiting",
     "running",
     "review",
+    "look-directions-a",
+    "look-directions-b",
 )
 
 
@@ -60,7 +62,7 @@ def frame_hash(frame: Image.Image) -> str:
 
 def verify_pet(pet_dir: Path, report_path: Path | None = None) -> dict[str, object]:
     metadata_path = pet_dir / "pet.json"
-    sheet_path = pet_dir / "spritesheet.png"
+    sheet_path = pet_dir / "spritesheet.webp"
 
     if not metadata_path.exists():
         fail(f"missing {metadata_path}")
@@ -77,7 +79,8 @@ def verify_pet(pet_dir: Path, report_path: Path | None = None) -> dict[str, obje
         "id": "pebble-poses",
         "displayName": "Pebble Poses",
         "description": "Pebble, a focused stone companion for Codex activity states.",
-        "spritesheetPath": "spritesheet.png",
+        "spriteVersionNumber": 2,
+        "spritesheetPath": "spritesheet.webp",
     }
     if metadata != expected_metadata:
         fail(f"pet.json does not match expected metadata: {metadata}")
@@ -86,21 +89,19 @@ def verify_pet(pet_dir: Path, report_path: Path | None = None) -> dict[str, obje
         with Image.open(sheet_path) as source:
             detected_format = source.format
             detected_mime = Image.MIME.get(detected_format or "")
-            if detected_format != "PNG" or detected_mime != "image/png":
+            if detected_format != "WEBP" or detected_mime != "image/webp":
                 fail(
-                    "spritesheet.png must contain PNG-encoded bytes, "
+                    "spritesheet.webp must contain WebP-encoded bytes, "
                     f"got format={detected_format!r} mime={detected_mime!r}"
                 )
             if source.size != EXPECTED_SIZE:
                 fail(f"spritesheet must be {EXPECTED_SIZE}, got {source.size}")
-            if source.mode not in {"RGBA", "LA", "P"}:
-                fail(f"spritesheet PNG must support transparency, got mode {source.mode!r}")
-            if source.mode == "P" and "transparency" not in source.info:
-                fail("palette spritesheet PNG has no transparency information")
+            if source.mode not in {"RGBA", "LA"}:
+                fail(f"spritesheet WebP must support transparency, got mode {source.mode!r}")
             source.load()
             image = source.convert("RGBA")
     except (OSError, UnidentifiedImageError) as exc:
-        fail(f"could not decode {sheet_path} as PNG: {exc}")
+        fail(f"could not decode {sheet_path} as WebP: {exc}")
 
     raw = image.tobytes()
     residue_pixels = 0
@@ -129,7 +130,13 @@ def verify_pet(pet_dir: Path, report_path: Path | None = None) -> dict[str, obje
             if col < used_count:
                 if bbox is None:
                     fail(f"row {row_index} {name} column {col} is empty")
-                if bbox[0] < 2 or bbox[1] < 2 or bbox[2] > FRAME_W - 2 or bbox[3] > FRAME_H:
+                required_padding = 1 if name.startswith("look-directions-") else 2
+                if (
+                    bbox[0] < required_padding
+                    or bbox[1] < required_padding
+                    or bbox[2] > FRAME_W - required_padding
+                    or bbox[3] > FRAME_H
+                ):
                     fail(f"row {row_index} {name} column {col} is clipped or lacks safe padding: {bbox}")
                 components = component_count(alpha)
                 if components != 1:

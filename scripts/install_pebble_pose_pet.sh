@@ -13,7 +13,7 @@ Usage: $(basename "$0") [--source DIR] [--target DIR]
 Installs Pebble Poses after validating the source atlas.
 
 Options:
-  --source DIR  Pet folder containing pet.json and spritesheet.png.
+  --source DIR  Pet folder containing pet.json and spritesheet.webp.
   --target DIR  Destination folder. Defaults to
                 \${CODEX_HOME:-\$HOME/.codex}/pets/pebble-poses.
   -h, --help    Show this help text.
@@ -64,7 +64,7 @@ cleanup() {
 trap cleanup EXIT
 
 install -m 0644 "$SOURCE_DIR/pet.json" "$STAGING_DIR/pet.json"
-install -m 0644 "$SOURCE_DIR/spritesheet.png" "$STAGING_DIR/spritesheet.png"
+install -m 0644 "$SOURCE_DIR/spritesheet.webp" "$STAGING_DIR/spritesheet.webp"
 
 BACKUP_DIR=""
 if [[ -e "$TARGET_DIR" ]]; then
